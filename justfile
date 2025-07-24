@@ -1,6 +1,6 @@
 build:
     mkdir -p build
-    cd build && cmake .. && make
+    cd build && cmake .. && make -j16
 load:
     cp -v build/dfirm.uf2 /media/$USER/RP2350/
 clean:
