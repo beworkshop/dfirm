@@ -1,13 +1,33 @@
 #include "pico/stdlib.h"
 #include <stdio.h>
 #include "include/led.h"
+#include "include/uart.h"
+#include "include/log.h"
 
 
 int main() {
+    // Inits
     stdio_init_all();
-    led_init();
+    d_led_init();
+    d_uart_init();
 
+    // Starting sequence
+    sleep_ms(2000);
+    d_led_blink_loop(100, 5);
+
+    
+    // Main loop
     while (1) {
-        led_blink(500);
+        d_led_activate(10);
+        //log_message(LOG_LEVEL_DEBUG, "Led blinked");
+        char* msg = d_uart_read();
+        printf("%s\n", msg);
+        d_led_deactivate(1000);
     }
+
+
+    // Deinits
+    d_uart_deinit();
+    d_led_deinit();
+    stdio_deinit_all();
 }

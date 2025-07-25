@@ -1,10 +1,8 @@
-#ifndef LED_H
-#define LED_H
+#pragma once
 
-#include "pico/stdlib.h"
-
-// Function declarations
-int led_init(void);
-int led_blink(uint32_t sleep_time);
-
-#endif // LED_H
+void d_led_init(void);
+void d_led_activate(const int sleep_time);
+void d_led_deactivate(const int sleep_time);
+void d_led_blink(const int sleep_time);
+void d_led_blink_loop(const int sleep_time, const int num);
+void d_led_deinit();
