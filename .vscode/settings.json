@@ -41,6 +41,9 @@
         "cstdint": "c",
         "format": "c",
         "led.h": "c",
-        "cstring": "c"
+        "cstring": "c",
+        "variant": "c",
+        "typeinfo": "c",
+        "log.h": "c"
     }
 }
