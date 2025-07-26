@@ -12,17 +12,19 @@ int main() {
     d_uart_init();
 
     // Starting sequence
-    sleep_ms(2000);
-    d_led_blink_loop(100, 5);
+    d_led_blink_loop(100, 10);
 
-    
     // Main loop
     while (1) {
         d_led_activate(10);
         //log_message(LOG_LEVEL_DEBUG, "Led blinked");
+
         char* msg = d_uart_read();
+
         printf("%s\n", msg);
-        d_led_deactivate(1000);
+        
+
+        d_led_deactivate(10);
     }
 
 

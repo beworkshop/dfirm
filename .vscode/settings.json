@@ -40,6 +40,7 @@
     "files.associations": {
         "cstdint": "c",
         "format": "c",
-        "led.h": "c"
+        "led.h": "c",
+        "cstring": "c"
     }
 }
