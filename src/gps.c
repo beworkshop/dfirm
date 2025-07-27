@@ -3,6 +3,9 @@
 #include <stdio.h>
 #include "include/log.h"
 
+
+#define ASSIGN_IF_NONZERO(var, val) if ((val) != 0.0f) { (var) = (val); }
+
 typedef struct {
     int hours;
     int minutes;
@@ -65,30 +68,27 @@ void parse_gngga(char* msg) {
     gps_time.hours = time_int / 10000;
     gps_time.minutes = (time_int / 100) % 100;
     gps_time.seconds = time_int % 100;
-    gps_position.f_latitude = parse_float(msg, 2);
-    gps_position.f_longitude = parse_float(msg, 4);
+    ASSIGN_IF_NONZERO(gps_position.f_latitude, parse_float(msg, 2));
+    ASSIGN_IF_NONZERO(gps_position.f_longitude, parse_float(msg, 4));
     gps_position.c_latitude = parse_char(msg, 3);
     gps_position.c_longitude = parse_char(msg, 5);
-    float altitude = parse_float(msg, 9);
-    if (altitude != 0.0){ // Information is not always sent
-        gps_position.altitude = altitude;
-    }
-
+    ASSIGN_IF_NONZERO(gps_position.altitude, parse_float(msg, 9));
 }
 void parse_gngll(char* msg) {
-    gps_position.f_latitude = parse_float(msg, 1);
-    gps_position.f_longitude = parse_float(msg, 3);
+    ASSIGN_IF_NONZERO(gps_position.f_latitude, parse_float(msg, 1));
+    ASSIGN_IF_NONZERO(gps_position.f_longitude, parse_float(msg, 3));
     gps_position.c_latitude = parse_char(msg, 2);
     gps_position.c_longitude = parse_char(msg, 4);
 }
 
 void parse_gngsa(char* msg) {
-    gps_satellite.pdop = parse_float(msg, 15);
-    gps_satellite.hdop = parse_float(msg, 16);
-    gps_satellite.vdop = parse_float(msg, 17);
+    ASSIGN_IF_NONZERO(gps_satellite.pdop, parse_float(msg,15));
+    ASSIGN_IF_NONZERO(gps_satellite.hdop, parse_float(msg,16));
+    ASSIGN_IF_NONZERO(gps_satellite.vdop, parse_float(msg,17));
 }
+// Unused
 void parse_gngsv(char* msg) {
-    gps_satellite.snr = parse_int(msg, 7);
+    ASSIGN_IF_NONZERO(gps_satellite.snr, parse_int(msg, 7));
 }
 void parse_gnrmc(char* msg) {
     char status = parse_char(msg, 2);
@@ -103,12 +103,12 @@ void parse_gnrmc(char* msg) {
 }
 
 
-void parse_gnvtg(char* msg){
-    gps_position.track_angle = parse_float(msg, 1);
-    gps_position.speed = parse_float(msg, 5) * 0.514444f; // knots -> m/s
+void parse_gnvtg(char* msg) {
+    ASSIGN_IF_NONZERO(gps_position.track_angle, parse_float(msg, 1));
+    ASSIGN_IF_NONZERO(gps_position.speed, parse_float(msg, 5) * 0.514444f);
 }
 
-void parse_gnzda(char* msg){
+void parse_gnzda(char* msg) {
     int time_int = parse_int(msg, 1);
     gps_time.hours = time_int / 10000;
     gps_time.minutes = (time_int / 100) % 100;
@@ -121,7 +121,7 @@ void parse_gnzda(char* msg){
     }
 }
 
-void d_parse_line(char* msg){
+void d_parse_line(char* msg) {
     if (str_match(msg, "$GNZDA")){
         parse_gnzda(msg);
         return;
@@ -142,10 +142,12 @@ void d_parse_line(char* msg){
         return;
     }
     // Unused
+    /*
     if (str_match(msg, "$GNGSV")){
         parse_gngsv(msg);
         return;
     }
+    */
     if (str_match(msg, "$GNRMC")){
         parse_gnrmc(msg);
         return;
@@ -167,4 +169,8 @@ void d_print_gps_compact(void) {
            gps_position.speed, gps_position.track_angle,
            gps_satellite.pdop, gps_satellite.hdop, gps_satellite.vdop, gps_satellite.snr,
            gps_satellite.status == 1 ? "OK" : "POOR");
+}
+
+bool d_should_fly() {
+    return gps_position.f_latitude != 0.0 && gps_position.f_longitude != 0.0 && gps_satellite.status == 1;
 }
