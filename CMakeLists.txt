@@ -32,6 +32,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 
 target_link_libraries(${PROJECT_NAME} 
     pico_stdlib
+    pico_multicore
     hardware_uart
     hardware_gpio
     hardware_i2c

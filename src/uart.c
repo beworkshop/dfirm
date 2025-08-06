@@ -58,7 +58,7 @@ void d_uart_send(const char* str) {
     uart_puts(UART, "\r\n");
 }
 void d_uart_slow_baude() {
-    d_uart_send("$PCAS01,1");
+    d_uart_send("$PCAS01,0");
     sleep_ms(1000);
     uart_deinit(UART);
     uart_init(UART, DEFAULT_BAUD_RATE);
@@ -67,7 +67,7 @@ void d_uart_slow_baude() {
     
 }
 void d_uart_fast_baude() {
-    d_uart_send("$PCAS01,2");
+    d_uart_send("$PCAS01,0");
     sleep_ms(1000);
     uart_deinit(UART);
     uart_init(UART, FAST_BAUD_RATE);
@@ -78,7 +78,7 @@ void d_uart_fast_baude() {
 
 void d_uart_set_nmea() {
     // nGGA,nGLL,nGSA,nGSV,nRMC,nVTG,nZDA,nANT,nDHV,nLP
-    d_uart_send("$PCAS03,1,1,1,0,1,1,1,,,,,,,,,,,");
+    d_uart_send("$PCAS03,1,1,0,0,1,1,1,,,,,,,,,,,");
 }
 
 void d_uart_hot_start() {

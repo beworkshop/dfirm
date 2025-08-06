@@ -1,24 +1,24 @@
 #include "pico/stdlib.h"
+#include "pico/multicore.h"
 #include <stdio.h>
 #include "include/led.h"
 #include "include/uart.h"
 #include "include/log.h"
 #include "include/gps.h"
 #include "include/utils.h"
-#include "include/barometer.h"
 
 
 int main() {
     // Inits
     stdio_init_all();
     d_led_init();
-    d_uart_init(true);
+    d_uart_init(false);
 
     // Starting sequence
     d_led_blink_loop(100, 10);
 
     // Setting up UART at baud
-    //d_uart_fast_baude();
+    d_uart_fast_baude();
     d_uart_set_nmea();
     d_uart_hot_start();
     sleep_ms(200);
@@ -32,17 +32,17 @@ int main() {
         for (int i = 0; i < 10; i++){
             char* msg = d_uart_read();
             if (msg[0] != '\0'){
-                //print_literal(msg);
+                print_literal(msg);
                 d_parse_line(msg);
             }
-            sleep_ms(100);
+            sleep_ms(200);
         }
 
         d_print_gps_compact();
 
 
 
-        d_led_deactivate(10);
+
     }
 
 

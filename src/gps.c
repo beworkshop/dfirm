@@ -1,6 +1,7 @@
 #include "pico/stdlib.h"
 #include "include/utils.h"
 #include <stdio.h>
+#include <stdlib.h>
 #include "include/log.h"
 
 
@@ -44,25 +45,28 @@ static gps_satellite_t gps_satellite = {0, false};
 
 
 bool is_nmea_incomplete(char* msg) {
-    if (!msg) return true;
+if (!msg) return true;
 
-    if (*msg != '$') return true;
+    // A valid sentence starts with "$"
+    if (*msg++ != '$') return true;
 
-    // Find '*'
+    int calculated_checksum = 0x00;
     char *p = msg;
     int len = 0;
-    char *star_ptr = 0;
-    while (*p && len < 120) { // Limit max NMEA length
-        if (*p == '*') {
-            star_ptr = p;
-            break;
-        }
-        ++p;
-        ++len;
+    while (*p && *p != '*' && len < 120) {
+        if (*p < 32 || *p > 126) return true;
+        calculated_checksum ^= *p;
+        p++;
+        len++;
     }
-    if (!star_ptr) return true;
+    
+    if (*p != '*') return true;
+    
+    
     return false;
 }
+
+
 void parse_gngga(char* msg) {
     int time_int = parse_int(msg, 1);
     gps_time.hours = time_int / 10000;
@@ -79,8 +83,11 @@ void parse_gngll(char* msg) {
     ASSIGN_IF_NONZERO(gps_position.f_longitude, parse_float(msg, 3));
     gps_position.c_latitude = parse_char(msg, 2);
     gps_position.c_longitude = parse_char(msg, 4);
+    ASSIGN_IF_NONZERO(gps_satellite.pdop, parse_float(msg,12));
+    ASSIGN_IF_NONZERO(gps_satellite.hdop, parse_float(msg,13));
+    ASSIGN_IF_NONZERO(gps_satellite.vdop, parse_float(msg,14));
 }
-
+// Unused
 void parse_gngsa(char* msg) {
     ASSIGN_IF_NONZERO(gps_satellite.pdop, parse_float(msg,15));
     ASSIGN_IF_NONZERO(gps_satellite.hdop, parse_float(msg,16));
@@ -122,10 +129,6 @@ void parse_gnzda(char* msg) {
 }
 
 void d_parse_line(char* msg) {
-    if (str_match(msg, "$GNZDA")){
-        parse_gnzda(msg);
-        return;
-    }
     if (is_nmea_incomplete(msg)){
         return;
     }
@@ -137,12 +140,13 @@ void d_parse_line(char* msg) {
         parse_gngll(msg);
         return;
     }
+    // Unused
+    /*
     if (str_match(msg, "$GNGSA")){
         parse_gngsa(msg);
         return;
     }
-    // Unused
-    /*
+
     if (str_match(msg, "$GNGSV")){
         parse_gngsv(msg);
         return;
@@ -154,6 +158,10 @@ void d_parse_line(char* msg) {
     }
     if (str_match(msg, "$GNVTG")){
         parse_gnvtg(msg);
+        return;
+    }
+    if (str_match(msg, "$GNZDA")){
+        parse_gnzda(msg);
         return;
     }
 
