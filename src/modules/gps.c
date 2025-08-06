@@ -1,8 +1,7 @@
 #include "pico/stdlib.h"
-#include "include/utils.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include "include/log.h"
+#include "log.h"
 
 
 #define ASSIGN_IF_NONZERO(var, val) if ((val) != 0.0f) { (var) = (val); }
@@ -38,11 +37,67 @@ typedef struct {
     bool status; // measurement of reception
 } gps_satellite_t;
 
+// -- Core gps data structures
+
 static gps_time_t gps_time = {0, 0, 0};
 static gps_position_t gps_position = {0};
 static gps_date_t gps_date = {0, 0, 0, true};
 static gps_satellite_t gps_satellite = {0, false};
 
+
+// -- Helper functions - for the parsers
+
+// Matches pattern like $GNGGA
+bool str_match(char* str, char pattern[6]){
+    for (int i = 0; i < 6; i++){
+        if (str[i] != pattern[i]) {
+            return false;
+        }
+    }
+    return true;
+}
+
+inline bool is_hex(char c) {
+    return ((c >= '0' && c <= '9') ||
+            (c >= 'A' && c <= 'F') ||
+            (c >= 'a' && c <= 'f'));
+}
+
+
+char parse_char(char* msg, int field_index) {
+    int current_field = 0;
+    int i = 0;
+
+    while (msg[i] && current_field < field_index) {
+        if (msg[i] == ',') current_field++;
+        i++;
+    }
+
+    return msg[i];
+}
+float parse_float(char* msg, int field_index) {
+    int current_field = 0;
+    int i = 0;
+    
+    while (msg[i] && current_field < field_index) {
+        if (msg[i] == ',') current_field++;
+        i++;
+    }
+    
+    return atof(msg + i);
+}
+
+int parse_int(char* msg, int field_index) {
+    int current_field = 0;
+    int i = 0;
+    
+    while (msg[i] && current_field < field_index) {
+        if (msg[i] == ',') current_field++;
+        i++;
+    }
+    
+    return atoi(msg + i);
+}
 
 bool is_nmea_incomplete(char* msg) {
 if (!msg) return true;
@@ -66,6 +121,7 @@ if (!msg) return true;
     return false;
 }
 
+// -- Parsers - update data structures
 
 void parse_gngga(char* msg) {
     int time_int = parse_int(msg, 1);
@@ -128,6 +184,7 @@ void parse_gnzda(char* msg) {
     }
 }
 
+
 void d_parse_line(char* msg) {
     if (is_nmea_incomplete(msg)){
         return;
@@ -166,6 +223,8 @@ void d_parse_line(char* msg) {
     }
 
 };
+
+// -- Utils functions
 
 void d_print_gps_compact(void) {
     printf("GPS: %02d:%02d:%02d %02d/%02d/%04d | %.6f°%c %.6f°%c %.2fm| %.1fm/s %.0f° | PDOP:%.1f HDOP:%.1f VDOP:%.1f SNR:%ddB %s\n",

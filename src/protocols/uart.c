@@ -1,6 +1,5 @@
 #include "pico/stdlib.h"
-#include "include/log.h"
-#include "include/utils.h"
+#include "log.h"
 
 
 #define DEFAULT_BAUD_RATE 9600

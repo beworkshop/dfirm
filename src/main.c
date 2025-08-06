@@ -1,11 +1,15 @@
 #include "pico/stdlib.h"
 #include "pico/multicore.h"
 #include <stdio.h>
-#include "include/led.h"
-#include "include/uart.h"
-#include "include/log.h"
-#include "include/gps.h"
-#include "include/utils.h"
+#include "led.h"
+#include "protocols/uart.h"
+#include "log.h"
+#include "modules/gps.h"
+
+
+
+
+
 
 
 int main() {
@@ -32,7 +36,7 @@ int main() {
         for (int i = 0; i < 10; i++){
             char* msg = d_uart_read();
             if (msg[0] != '\0'){
-                print_literal(msg);
+                printf(msg);
                 d_parse_line(msg);
             }
             sleep_ms(200);

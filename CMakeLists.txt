@@ -14,29 +14,56 @@ project(dfirm C CXX ASM)
 
 pico_sdk_init()
 
-file(GLOB SOURCES "src/*.c")
 
-add_executable(${PROJECT_NAME} ${SOURCES})
+
+add_library(${PROJECT_NAME}_core_lib
+    src/core.c
+    src/log.c
+    src/led.c
+)
+add_library(${PROJECT_NAME}_protocols_lib
+    src/protocols/uart.c
+)
+add_library(${PROJECT_NAME}_modules_lib
+    src/modules/gps.c
+)
+
+target_include_directories(${PROJECT_NAME}_core_lib PUBLIC include)
+target_include_directories(${PROJECT_NAME}_protocols_lib PUBLIC include)
+target_include_directories(${PROJECT_NAME}_modules_lib PUBLIC include)
+
+target_link_libraries(${PROJECT_NAME}_core_lib 
+    pico_stdlib
+    pico_multicore
+    hardware_gpio
+    pico_time
+)
+
+target_link_libraries(${PROJECT_NAME}_protocols_lib 
+    pico_stdlib
+    hardware_uart
+    hardware_i2c
+    pico_time
+)
+
+target_link_libraries(${PROJECT_NAME}_modules_lib 
+    pico_stdlib
+)
+
+add_executable(${PROJECT_NAME} src/main.c)
+
+
+target_link_libraries(${PROJECT_NAME} 
+    pico_stdlib
+    ${PROJECT_NAME}_core_lib
+    ${PROJECT_NAME}_protocols_lib
+    ${PROJECT_NAME}_modules_lib
+)
 
 pico_set_program_name(${PROJECT_NAME} "${PROJECT_NAME}")
 pico_set_program_version(${PROJECT_NAME} "0.1")
 
 pico_enable_stdio_uart(${PROJECT_NAME} 0)
 pico_enable_stdio_usb(${PROJECT_NAME} 1)
-
-
-target_include_directories(${PROJECT_NAME} PRIVATE
-    ${CMAKE_CURRENT_LIST_DIR}
-    ${CMAKE_CURRENT_LIST_DIR}/src
-)
-
-target_link_libraries(${PROJECT_NAME} 
-    pico_stdlib
-    pico_multicore
-    hardware_uart
-    hardware_gpio
-    hardware_i2c
-    pico_time
-)
 
 pico_add_extra_outputs(${PROJECT_NAME})
