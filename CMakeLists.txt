@@ -23,9 +23,11 @@ add_library(${PROJECT_NAME}_core_lib
 )
 add_library(${PROJECT_NAME}_protocols_lib
     src/protocols/uart.c
+    src/protocols/iic.c
 )
 add_library(${PROJECT_NAME}_modules_lib
     src/modules/gps.c
+    src/modules/accelerometer.c
 )
 
 target_include_directories(${PROJECT_NAME}_core_lib PUBLIC include)
@@ -48,6 +50,7 @@ target_link_libraries(${PROJECT_NAME}_protocols_lib
 
 target_link_libraries(${PROJECT_NAME}_modules_lib 
     pico_stdlib
+    ${PROJECT_NAME}_protocols_lib 
 )
 
 add_executable(${PROJECT_NAME} src/main.c)

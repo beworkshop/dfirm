@@ -198,7 +198,6 @@ void d_update_gps(gps_time_t *gps_time, gps_position_t *gps_position, gps_satell
     for (int i = 0; i < 10; i++){
         char* msg = d_uart_read();
         if (msg[0] != '\0'){
-            LOG_INFO(msg);
             d_parse_line(msg, gps_time, gps_position, gps_satellite);
         }
         sleep_ms(5);

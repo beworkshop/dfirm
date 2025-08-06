@@ -1,6 +1,7 @@
 #include "pico/stdlib.h"
 #include "led.h"
 #include "protocols/uart.h"
+#include "protocols/iic.h"
 #include "core.h"
 
 
@@ -14,12 +15,13 @@ int main() {
     d_led_init();
     d_uart_init(false);
 
-    // Starting sequence
-    d_led_blink_loop(100, 10);
-
     // Setting up UART at baud
     d_uart_set_nmea();
-    sleep_ms(200);
+    // Setting up i2c
+    d_init_i2c();
+
+    // Starting sequence
+    d_led_blink_loop(100, 10);
 
     d_start_dualcore();
 
