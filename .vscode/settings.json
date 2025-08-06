@@ -44,6 +44,7 @@
         "cstring": "c",
         "variant": "c",
         "typeinfo": "c",
-        "log.h": "c"
+        "log.h": "c",
+        "gps.h": "c"
     }
 }
