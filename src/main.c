@@ -36,7 +36,7 @@ int main() {
         for (int i = 0; i < 10; i++){
             char* msg = d_uart_read();
             if (msg[0] != '\0'){
-                printf(msg);
+                LOG_INFO(msg);
                 d_parse_line(msg);
             }
             sleep_ms(200);

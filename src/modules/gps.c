@@ -227,7 +227,7 @@ void d_parse_line(char* msg) {
 // -- Utils functions
 
 void d_print_gps_compact(void) {
-    printf("GPS: %02d:%02d:%02d %02d/%02d/%04d | %.6f°%c %.6f°%c %.2fm| %.1fm/s %.0f° | PDOP:%.1f HDOP:%.1f VDOP:%.1f SNR:%ddB %s\n",
+    LOG_INFO("GPS: %02d:%02d:%02d %02d/%02d/%04d | %.6f°%c %.6f°%c %.2fm| %.1fm/s %.0f° | PDOP:%.1f HDOP:%.1f VDOP:%.1f SNR:%ddB %s\n",
            gps_time.hours, gps_time.minutes, gps_time.seconds,
            gps_date.day, gps_date.month, gps_date.year,
            gps_position.f_latitude, gps_position.c_latitude,
