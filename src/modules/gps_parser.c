@@ -1,14 +1,13 @@
 #include "pico/stdlib.h"
-#include <stdio.h>
 #include <stdlib.h>
 #include "log.h"
-#include "modules/gps.h"
+#include "modules/gps_parser.h"
+#include "modules/gps_check.h"
 #include "protocols/uart.h"
+#include <math.h>
+
 
 #define ASSIGN_IF_NONZERO(var, val) if ((val) != 0.0f) { (var) = (val); }
-
-
-
 
 // -- Helper functions - for the parsers
 
@@ -48,8 +47,8 @@ float parse_float(char* msg, int field_index) {
         if (msg[i] == ',') current_field++;
         i++;
     }
-    
-    return atof(msg + i);
+    int start = i;
+    return atof(msg + start);
 }
 
 int parse_int(char* msg, int field_index) {
@@ -65,7 +64,7 @@ int parse_int(char* msg, int field_index) {
 }
 
 bool is_nmea_incomplete(char* msg) {
-if (!msg) return true;
+    if (!msg) return true;
 
     // A valid sentence starts with "$"
     if (*msg++ != '$') return true;
@@ -73,17 +72,45 @@ if (!msg) return true;
     int calculated_checksum = 0x00;
     char *p = msg;
     int len = 0;
+    
     while (*p && *p != '*' && len < 120) {
-        if (*p < 32 || *p > 126) return true;
+        if (*p < 32 || *p > 126) return true;  // Invalid character
         calculated_checksum ^= *p;
         p++;
         len++;
     }
     
     if (*p != '*') return true;
+    p++;
     
+
+    if (!*p || !*(p+1)) return true;
+    
+    int received_checksum = 0;
+    for (int i = 0; i < 2; i++) {
+        char c = p[i];
+        if (c >= '0' && c <= '9') {
+            received_checksum = (received_checksum << 4) + (c - '0');
+        } else if (c >= 'A' && c <= 'F') {
+            received_checksum = (received_checksum << 4) + (c - 'A' + 10);
+        } else if (c >= 'a' && c <= 'f') {
+            received_checksum = (received_checksum << 4) + (c - 'a' + 10);
+        } else {
+            return true;  // Invalid hex character
+        }
+    }
+    
+    if (calculated_checksum != received_checksum) {
+        return true;
+    }
     
     return false;
+}
+bool altitude_check(float altitude) {
+    if (altitude > 300.0f || altitude < 0.0f) {
+        return false;
+    }
+    return true;
 }
 
 // -- Parsers - update data structures
@@ -93,47 +120,35 @@ void parse_gngga(char* msg, gps_time_t *gps_time, gps_position_t *gps_position) 
     gps_time->hours = time_int / 10000;
     gps_time->minutes = (time_int / 100) % 100;
     gps_time->seconds = time_int % 100;
-    ASSIGN_IF_NONZERO(gps_position->f_latitude, parse_float(msg, 2));
-    ASSIGN_IF_NONZERO(gps_position->f_longitude, parse_float(msg, 4));
-    gps_position->c_latitude = parse_char(msg, 3);
-    gps_position->c_longitude = parse_char(msg, 5);
-    ASSIGN_IF_NONZERO(gps_position->altitude, parse_float(msg, 9));
+    check_gps_pos(gps_position, parse_float(msg, 2), parse_float(msg, 4), parse_char(msg, 3), parse_char(msg, 5), 0x0);
+    float altitude = parse_float(msg, 9);
+    if (altitude_check(altitude)){
+        gps_position->altitude = altitude;
+    }
 }
 void parse_gngll(char* msg, gps_position_t *gps_position, gps_satellite_t *gps_satellite) {
-    ASSIGN_IF_NONZERO(gps_position->f_latitude, parse_float(msg, 1));
-    ASSIGN_IF_NONZERO(gps_position->f_longitude, parse_float(msg, 3));
-    gps_position->c_latitude = parse_char(msg, 2);
-    gps_position->c_longitude = parse_char(msg, 4);
-    ASSIGN_IF_NONZERO(gps_satellite->pdop, parse_float(msg,12));
-    ASSIGN_IF_NONZERO(gps_satellite->hdop, parse_float(msg,13));
-    ASSIGN_IF_NONZERO(gps_satellite->vdop, parse_float(msg,14));
+    check_gps_pos(gps_position, parse_float(msg, 1), parse_float(msg, 3), parse_char(msg, 2), parse_char(msg, 4), 0x1);
 }
 // Unused
 void parse_gngsa(char* msg, gps_satellite_t *gps_satellite) {
-    ASSIGN_IF_NONZERO(gps_satellite->pdop, parse_float(msg,15));
-    ASSIGN_IF_NONZERO(gps_satellite->hdop, parse_float(msg,16));
-    ASSIGN_IF_NONZERO(gps_satellite->vdop, parse_float(msg,17));
+    gps_satellite->pdop = parse_float(msg,15);
+    gps_satellite->hdop = parse_float(msg,16);
+    gps_satellite->vdop = parse_float(msg,17);
 }
 // Unused
 void parse_gngsv(char* msg, gps_satellite_t *gps_satellite) {
-    ASSIGN_IF_NONZERO(gps_satellite->snr, parse_int(msg, 7));
+    gps_satellite->snr = parse_int(msg, 7);
 }
-void parse_gnrmc(char* msg, gps_satellite_t *gps_satellite) {
+void parse_gnrmc(char* msg, gps_position_t *gps_position, gps_satellite_t *gps_satellite) {
     char status = parse_char(msg, 2);
     if (status == 'A') {gps_satellite->status = 1;}
     if (status == 'V') {gps_satellite->status = 0;}
-    //gps_position.f_latitude = parse_float(msg, 3);
-    //gps_position.f_longitude = parse_float(msg, 5);
-    //gps_position.c_latitude = parse_char(msg, 4);
-    //gps_position.c_longitude = parse_char(msg, 6);
-    //gps_position.track_angle = parse_float(msg, 7);
-    //gps_position.speed = parse_float(msg, 8) * 0.514444f; // knots -> m/s
+    check_gps_pos(gps_position, parse_float(msg, 3), parse_float(msg, 5), parse_char(msg, 4), parse_char(msg, 6), 0x2);
+    check_gps_velocity(gps_position, parse_float(msg, 7) * 0.514444f, parse_float(msg, 8), 0x2); // knots -> m/s
 }
 
-
 void parse_gnvtg(char* msg, gps_position_t *gps_position) {
-    ASSIGN_IF_NONZERO(gps_position->track_angle, parse_float(msg, 1));
-    ASSIGN_IF_NONZERO(gps_position->speed, parse_float(msg, 5) * 0.514444f);
+    check_gps_velocity(gps_position, parse_float(msg, 5) * 0.514444f, parse_float(msg, 1), 0x3); // knots -> m/s
 }
 // Unused
 void parse_gnzda(char* msg, gps_time_t *gps_time, gps_date_t *gps_date) {
@@ -152,6 +167,7 @@ void parse_gnzda(char* msg, gps_time_t *gps_time, gps_date_t *gps_date) {
 
 void d_parse_line(char* msg, gps_time_t *gps_time, gps_position_t *gps_position, gps_satellite_t *gps_satellite) {
     if (is_nmea_incomplete(msg)){
+        LOG_DEBUG("NMEA check fail");
         return;
     }
     if (str_match(msg, "$GNGGA")){
@@ -175,7 +191,7 @@ void d_parse_line(char* msg, gps_time_t *gps_time, gps_position_t *gps_position,
     }
     */
     if (str_match(msg, "$GNRMC")){
-        parse_gnrmc(msg, gps_satellite);
+        parse_gnrmc(msg, gps_position, gps_satellite);
         return;
     }
     if (str_match(msg, "$GNVTG")){
@@ -194,26 +210,28 @@ void d_parse_line(char* msg, gps_time_t *gps_time, gps_position_t *gps_position,
 
 };
 
-void d_update_gps(gps_time_t *gps_time, gps_position_t *gps_position, gps_satellite_t *gps_satellite) {
+void d_update_gps(gps_time_t *gps_time, gps_position_t *gps_position, gps_satellite_t *gps_satellite, bool print) {
     for (int i = 0; i < 10; i++){
         char* msg = d_uart_read();
+        if (print && msg != "\n") {
+            LOG_DEBUG(msg);
+        }
         if (msg[0] != '\0'){
             d_parse_line(msg, gps_time, gps_position, gps_satellite);
         }
-        sleep_ms(5);
     }
 }
 
 // -- Utils functions
 
 void d_print_gps_compact(gps_time_t *gps_time, gps_position_t *gps_position, gps_satellite_t *gps_satellite) {
-    LOG_INFO("GPS: %02d:%02d:%02d %02d/%02d/%04d | %.6f°%c %.6f°%c %.2fm| %.1fm/s %.0f° | PDOP:%.1f HDOP:%.1f VDOP:%.1f SNR:%ddB %s\n",
+    LOG_INFO(" === GPS: %02d:%02d:%02d | %.6f°%c %.6f°%c %.2fm | %.1fm/s %.0f° | PDOP:%.1f HDOP:%.1f VDOP:%.1f SNR:%ddB %s === ",
            gps_time->hours, gps_time->minutes, gps_time->seconds,
            gps_position->f_latitude, gps_position->c_latitude,
            gps_position->f_longitude, gps_position->c_longitude,
            gps_position->altitude,
            gps_position->speed, gps_position->track_angle,
-           gps_satellite->pdop, gps_satellite->hdop, gps_satellite->vdop, gps_satellite->snr,
-           gps_satellite->status == 1 ? "OK" : "POOR");
+           gps_satellite->pdop, gps_satellite->hdop, gps_satellite->vdop, 
+           gps_satellite->snr,
+           gps_satellite->status ? "OK" : "POOR");
 }
-

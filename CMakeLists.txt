@@ -15,10 +15,11 @@ project(dfirm C CXX ASM)
 pico_sdk_init()
 
 
-
+add_library(${PROJECT_NAME}_log_lib
+    src/log.c
+)
 add_library(${PROJECT_NAME}_core_lib
     src/core.c
-    src/log.c
     src/led.c
 )
 add_library(${PROJECT_NAME}_protocols_lib
@@ -26,13 +27,19 @@ add_library(${PROJECT_NAME}_protocols_lib
     src/protocols/iic.c
 )
 add_library(${PROJECT_NAME}_modules_lib
-    src/modules/gps.c
+    src/modules/gps_check.c
+    src/modules/gps_parser.c
     src/modules/accelerometer.c
 )
 
+target_include_directories(${PROJECT_NAME}_log_lib PUBLIC include)
 target_include_directories(${PROJECT_NAME}_core_lib PUBLIC include)
 target_include_directories(${PROJECT_NAME}_protocols_lib PUBLIC include)
 target_include_directories(${PROJECT_NAME}_modules_lib PUBLIC include)
+
+target_link_libraries(${PROJECT_NAME}_log_lib
+    pico_time
+)
 
 target_link_libraries(${PROJECT_NAME}_core_lib 
     pico_stdlib
@@ -51,6 +58,7 @@ target_link_libraries(${PROJECT_NAME}_protocols_lib
 target_link_libraries(${PROJECT_NAME}_modules_lib 
     pico_stdlib
     ${PROJECT_NAME}_protocols_lib 
+    ${PROJECT_NAME}_log_lib
 )
 
 add_executable(${PROJECT_NAME} src/main.c)

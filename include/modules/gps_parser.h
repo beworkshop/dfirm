@@ -1,5 +1,7 @@
 #pragma once
 
+#include "pico/stdlib.h"
+
 // -- Core gps data structures
 typedef struct {
     int hours;
@@ -33,7 +35,7 @@ typedef struct {
 } gps_satellite_t;
 
 
-void d_update_gps(gps_time_t *gps_time, gps_position_t *gps_position, gps_satellite_t *gps_satellite);
+void d_update_gps(gps_time_t *gps_time, gps_position_t *gps_position, gps_satellite_t *gps_satellite, bool print);
 void d_print_gps_compact(gps_time_t *gps_time, gps_position_t *gps_position, gps_satellite_t *gps_satellite);
 
 

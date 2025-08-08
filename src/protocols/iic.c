@@ -1,6 +1,3 @@
-// Current Date and Time (UTC - YYYY-MM-DD HH:MM:SS formatted): 2025-08-06 15:18:03
-// Current User's Login: emecdelam
-
 #include "pico/stdlib.h"
 #include "hardware/i2c.h"
 
@@ -8,6 +5,13 @@
 #define I2C_SDA 6
 #define I2C_SCL 7
 #define I2C_FREQ 1000000
+
+uint8_t read_register(uint8_t addr, uint8_t reg) {
+    uint8_t data;
+    i2c_write_blocking(I2C_PORT, addr, &reg, 1, true);
+    i2c_read_blocking(I2C_PORT, addr, &data, 1, false);
+    return data;
+}
 
 
 void read_registers(uint8_t addr, uint8_t reg, uint8_t *buf, uint8_t len) {

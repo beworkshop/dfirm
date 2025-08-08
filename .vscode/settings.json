@@ -45,6 +45,9 @@
         "variant": "c",
         "typeinfo": "c",
         "log.h": "c",
-        "gps.h": "c"
+        "gps.h": "c",
+        "gps_parser.h": "c",
+        "cmath": "c",
+        "sstream": "c"
     }
 }
