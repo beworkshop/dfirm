@@ -30,7 +30,7 @@ void update_gps_pos(gps_position_t *gps_position) {
         gps_position->c_latitude = temp_gps_pos_gngga.temp_c_latitude;
         gps_position->c_longitude = temp_gps_pos_gngga.temp_c_longitude;
 
-        LOG_INFO("GPS: Using GNGGA/GNGLL validated position");
+        LOG_DEBUG("GPS: Using GNGGA/GNGLL validated position");
         return;
     }
     
@@ -39,7 +39,7 @@ void update_gps_pos(gps_position_t *gps_position) {
         gps_position->f_longitude = temp_gps_pos_gngga.temp_f_longitude;
         gps_position->c_latitude = temp_gps_pos_gngga.temp_c_latitude;
         gps_position->c_longitude = temp_gps_pos_gngga.temp_c_longitude;
-        LOG_INFO("GPS: Using GNGGA/GNRMC validated position");
+        LOG_DEBUG("GPS: Using GNGGA/GNRMC validated position");
         return;
     }
 
@@ -48,7 +48,7 @@ void update_gps_pos(gps_position_t *gps_position) {
         gps_position->f_longitude = temp_gps_pos_gngll.temp_f_longitude;
         gps_position->c_latitude = temp_gps_pos_gngll.temp_c_latitude;
         gps_position->c_longitude = temp_gps_pos_gngll.temp_c_longitude;
-        LOG_INFO("GPS: Using GNGLL/GNRMC validated position");
+        LOG_DEBUG("GPS: Using GNGLL/GNRMC validated position");
         return;
     }
     LOG_DEBUG("GPS: No matching positions found, keeping previous data");
@@ -88,7 +88,7 @@ void update_gps_vel(gps_position_t* gps_pos) {
         gps_pos->speed = temp_gps_vel_gnvtg.temp_speed;
         gps_pos->track_angle = temp_gps_vel_gnvtg.temp_track_angle;
 
-        LOG_INFO("GPS: Using GNRMC/GNVTG validated velocity");
+        LOG_DEBUG("GPS: Using GNRMC/GNVTG validated velocity");
         return;
     }
     LOG_DEBUG("GPS: No matching velocity found, keeping previous data");

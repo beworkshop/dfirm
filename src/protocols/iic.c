@@ -26,10 +26,14 @@ void write_reg(uint8_t addr, uint8_t reg, uint8_t value) {
 }
 
 
-void d_init_i2c(void) {
+void d_i2c_init() {
     i2c_init(I2C_PORT, I2C_FREQ);
     gpio_set_function(I2C_SDA, GPIO_FUNC_I2C);
     gpio_set_function(I2C_SCL, GPIO_FUNC_I2C);
     gpio_pull_up(I2C_SDA);
     gpio_pull_up(I2C_SCL);
+
+}
+void d_i2c_deinit() {
+    i2c_deinit(I2C_PORT);
 }

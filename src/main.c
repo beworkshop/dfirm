@@ -4,6 +4,7 @@
 #include "protocols/iic.h"
 #include "modules/accelerometer.h"
 #include "modules/gps_parser.h"
+#include "modules/gps_com.h"
 #include "log.h"
 //#include "core.h"
 
@@ -17,12 +18,10 @@ int main() {
     stdio_init_all();
     d_led_init();
     d_uart_init(false);
+    d_i2c_init();
 
-    // Setting up UART at baud
-    d_uart_set_nmea();
-    // Setting up i2c
-    d_init_i2c();
-
+    // Starting the Air530Z
+    d_start_gps();
 
     // Starting the ICM20600
     d_start_acc();
@@ -50,6 +49,7 @@ int main() {
 
 
     // Deinits
+    d_i2c_deinit();
     d_uart_deinit();
     d_led_deinit();
     stdio_deinit_all();

@@ -1,5 +1,5 @@
 #include "protocols/uart.h"
-
+#include "pico/time.h"
 
 
 
@@ -20,36 +20,48 @@ int nmea_checksum(const char* sentence) {
     return checksum;
 }
 
-
 void gps_send(const char* str) {
     char cs[3];
     int checksum = nmea_checksum(str);
     byte_to_hex(checksum, cs);
     cs[2] = '\0';
     d_uart_send(str);
-    uart_puts("*");
-    uart_puts(cs);
-    uart_puts("\r\n");
+    d_uart_send("*");
+    d_uart_send(cs);
+    d_uart_send("\r\n");
 }
+
 
 void d_uart_slow_baude() {
-    d_uart_send("$PCAS01,0");
-    sleep_ms(1000);
-
-    
+    gps_send("$PCAS01,0");
+    sleep_ms(500);
+    d_uart_change_baude(4800);
 }
-void d_uart_fast_baude() {
-    d_uart_send("$PCAS01,2");
-    sleep_ms(1000);
+void d_gps_fast_baude() {
 
-    
+    d_uart_change_baude(115200);
+    sleep_ms(500);
+    gps_send("$PCAS01,5");
 }
 
+void d_gps_update_rate() {
+    gps_send("$PCAS02,100");
+}
 void d_gps_set_nmea() {
     // nGGA,nGLL,nGSA,nGSV,nRMC,nVTG,nZDA,nANT,nDHV,nLP
-    d_uart_send("$PCAS03,1,1,0,0,1,1,0,,,,,,,,,,,");
+    gps_send("$PCAS03,1,1,0,0,1,1,0,,,,,,,,,,,");
+}
+void d_gps_set_sattelite() {
+    gps_send("$PCAS04,7");
+}
+void d_gps_hot_start() {
+    gps_send("$PCAS10,0");
 }
 
-void d_gps_hot_start() {
-    d_uart_send("$PCAS10,rs");
+void d_start_gps() {
+    d_gps_hot_start();
+    //d_gps_fast_baude();
+    d_gps_update_rate();
+    d_gps_set_nmea();
+    d_gps_set_sattelite();
 }

@@ -212,7 +212,7 @@ void d_parse_line(char* msg, gps_time_t *gps_time, gps_position_t *gps_position,
 
 void d_update_gps(gps_time_t *gps_time, gps_position_t *gps_position, gps_satellite_t *gps_satellite, bool print) {
     for (int i = 0; i < 10; i++){
-        char* msg = d_uart_read();
+        char* msg = d_uart_read_nmea();
         if (print && msg != "\n") {
             LOG_DEBUG(msg);
         }
