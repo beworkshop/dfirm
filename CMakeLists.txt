@@ -21,6 +21,7 @@ add_library(${PROJECT_NAME}_log_lib
 add_library(${PROJECT_NAME}_core_lib
     src/core.c
     src/led.c
+    src/boot.c
 )
 add_library(${PROJECT_NAME}_protocols_lib
     src/protocols/uart.c

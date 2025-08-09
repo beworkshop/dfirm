@@ -6,6 +6,7 @@
 #include "modules/gps_parser.h"
 #include "modules/gps_com.h"
 #include "log.h"
+#include "boot.h"
 //#include "core.h"
 
 
@@ -14,6 +15,7 @@
 
 
 int main() {
+    check_boot();
     // Init protocols
     stdio_init_all();
     d_led_init();
