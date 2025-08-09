@@ -225,13 +225,11 @@ void d_update_gps(gps_time_t *gps_time, gps_position_t *gps_position, gps_satell
 // -- Utils functions
 
 void d_print_gps_compact(gps_time_t *gps_time, gps_position_t *gps_position, gps_satellite_t *gps_satellite) {
-    LOG_INFO(" === GPS: %02d:%02d:%02d | %.6f°%c %.6f°%c %.2fm | %.1fm/s %.0f° | PDOP:%.1f HDOP:%.1f VDOP:%.1f SNR:%ddB %s === ",
+    LOG_INFO(" === GPS: %02d:%02d:%02d | %.6f°%c %.6f°%c %.2fm | %.1fm/s %.0f° | %s === ",
            gps_time->hours, gps_time->minutes, gps_time->seconds,
            gps_position->f_latitude, gps_position->c_latitude,
            gps_position->f_longitude, gps_position->c_longitude,
            gps_position->altitude,
            gps_position->speed, gps_position->track_angle,
-           gps_satellite->pdop, gps_satellite->hdop, gps_satellite->vdop, 
-           gps_satellite->snr,
            gps_satellite->status ? "OK" : "POOR");
 }

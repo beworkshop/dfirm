@@ -32,8 +32,8 @@ void d_uart_send(const char* str) {
 void d_uart_change_baude(int rate) {
     uart_deinit(UART);
     uart_init(UART, rate);
-    //gpio_set_function(GPIO_TX, GPIO_FUNC_UART);
-    //gpio_set_function(GPIO_RX, GPIO_FUNC_UART);
+    gpio_set_function(GPIO_TX, GPIO_FUNC_UART);
+    gpio_set_function(GPIO_RX, GPIO_FUNC_UART);
 }
 
 

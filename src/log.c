@@ -1,7 +1,7 @@
 #include "log.h"
 #include "pico/time.h"
 
-static log_level_t runtime_log_level = LOG_LEVEL_DEBUG;
+static log_level_t runtime_log_level = LOG_LEVEL_INFO;
 
 static const char* level_names[] = {
     "TRACE", "DEBUG", "INFO", "WARN", "ERROR", "FATAL"

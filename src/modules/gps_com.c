@@ -38,10 +38,9 @@ void d_uart_slow_baude() {
     d_uart_change_baude(4800);
 }
 void d_gps_fast_baude() {
-
-    d_uart_change_baude(115200);
-    sleep_ms(500);
     gps_send("$PCAS01,5");
+    sleep_ms(500);
+    //d_uart_change_baude(115200); // TOFIX : can t read at 115200 even tho data is sent faster
 }
 
 void d_gps_update_rate() {
@@ -60,7 +59,7 @@ void d_gps_hot_start() {
 
 void d_start_gps() {
     d_gps_hot_start();
-    //d_gps_fast_baude();
+    d_gps_fast_baude();
     d_gps_update_rate();
     d_gps_set_nmea();
     d_gps_set_sattelite();
