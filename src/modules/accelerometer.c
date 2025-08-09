@@ -73,7 +73,7 @@ void d_update_acc(accel_data_t *acc) {
 
 
 void d_print_acc_compact(accel_data_t *acc) {
-    LOG_INFO("Accelerometer (g): X=%.2f  Y=%.2f  Z=%.2f\tGyroscope (°/s):   X=%.2f  Y=%.2f  Z=%.2f", 
+    LOG_INFO(" === Accelerometer (g): X=%-8.2f  Y=%-8.2f  Z=%-8.2f\tGyroscope (°/s):   X=%-8.2f  Y=%-8.2f  Z=%-8.2f === ", 
         acc->ax, acc->ay, acc->az, 
         acc->gx, acc->gy, acc->gz);
 }
