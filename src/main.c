@@ -3,7 +3,7 @@
 #include "protocols/uart.h"
 #include "protocols/iic.h"
 #include "modules/accelerometer.h"
-#include "modules/gps_parser.h"
+#include "modules/gps.h"
 #include "modules/gps_com.h"
 #include "log.h"
 #include "boot.h"

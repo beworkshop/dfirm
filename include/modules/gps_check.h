@@ -1,5 +1,5 @@
 #pragma once
-#include "modules/gps_parser.h"
+#include "modules/gps.h"
 
 typedef struct {
     float temp_f_latitude, temp_f_longitude;

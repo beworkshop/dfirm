@@ -1,7 +1,7 @@
 #include "pico/stdlib.h"
 #include <stdlib.h>
 #include "log.h"
-#include "modules/gps_parser.h"
+#include "modules/gps.h"
 #include "modules/gps_check.h"
 #include "protocols/uart.h"
 #include <math.h>

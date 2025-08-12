@@ -48,6 +48,8 @@
         "gps.h": "c",
         "gps_parser.h": "c",
         "cmath": "c",
-        "sstream": "c"
+        "sstream": "c",
+        "uart.h": "c",
+        "gps_check.h": "c"
     }
 }

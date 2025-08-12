@@ -30,7 +30,7 @@ add_library(${PROJECT_NAME}_protocols_lib
 add_library(${PROJECT_NAME}_modules_lib
     src/modules/gps_check.c
     src/modules/gps_com.c
-    src/modules/gps_parser.c
+    src/modules/gps.c
     src/modules/accelerometer.c
 )
 
